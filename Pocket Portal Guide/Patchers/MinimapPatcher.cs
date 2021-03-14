@@ -36,7 +36,7 @@ namespace Pocket_Portal_Guide
 		{
 			foreach (Portal portal in MinimapManager.Instance.GetPinsToRemove())
 			{
-				_miniMap.RemovePin(portal.Position);
+				_miniMap.RemovePin(portal.MapPin.m_pos);
 				LogManager.Instance.Log(BepInEx.Logging.LogLevel.Warning, $"[UpdateMapPins] Removed pin for {portal}");
 				PortalPinRemoved?.Invoke(null, portal.MapPin);
 				portal.MapPin = null;

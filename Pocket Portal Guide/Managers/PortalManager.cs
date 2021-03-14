@@ -54,6 +54,7 @@ namespace Pocket_Portal_Guide
 			foreach(Portal p in removed)
 			{
 				_portals.Remove(p);
+				_removedPortals.Add(p);
 			}
 			foreach(ZDO z in zdos)
 			{
@@ -120,7 +121,7 @@ namespace Pocket_Portal_Guide
 					p.AssignedColor = Color.white;
 				}
 			}
-			var unconnected = _pairs.Values.Where(pair => pair.One == null || pair.Two == null);
+			var unconnected = _pairs.Values.Where(pair => pair.One == null || pair.Two == null).ToList();
 			foreach(PortalPair pair in unconnected)
 			{
 				_pairs.Remove(pair.Tag);

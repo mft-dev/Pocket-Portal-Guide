@@ -23,11 +23,13 @@ namespace Pocket_Portal_Guide
 		public bool MapPinRemoved { get; set; } = false;
 		public ZDOID Id => _instance.m_uid;
 		public Vector3 Position => _instance.GetPosition();
+		public Vector3 OriginalPosition { get; set; }
 		public string Tag => _instance.GetString("tag", PortalManager.Instance.UntaggedPortalPinName);
 		public ZDOID Target => _instance.GetZDOID("target");
 		public Portal(ZDO portal)
 		{
 			_instance = portal;
+			OriginalPosition = _instance.GetPosition();
 		}
 
 		public override string ToString()
