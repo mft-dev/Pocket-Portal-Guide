@@ -16,12 +16,8 @@ namespace Pocket_Portal_Guide
 		/// </summary>
 		public static event EventHandler<PortalInformationEventArgs> PortalInformation;
 		/// <summary>
-		/// Raised when a Portal is found when the world first loads.
-		/// </summary>
-		public static event EventHandler<Portal> PortalFound;
-		/// <summary>
 		/// Postfix patch for Znet.Loadworld
-		/// <para>Builds a list of ZDOs that are Portals and communicates this via <see cref="PortalFound"/></para>
+		/// <para>Used only to get the portal prefab hash code</para>
 		/// </summary>
 		/// <param name="__instance"></param>
 		/// <param name="___m_zdoMan"></param>
@@ -29,7 +25,6 @@ namespace Pocket_Portal_Guide
 		[HarmonyPatch(typeof(ZNet), "LoadWorld")]
 		public static void ZNet_LoadWorld_Postfix(ref ZNet __instance, ref ZDOMan ___m_zdoMan)
 		{
-			List<ZDO> portals = new List<ZDO>();
 			if (Game.instance == null)
 			{
 				LogManager.Instance.Log(BepInEx.Logging.LogLevel.Error, $"[LoadWorld] Game.instance == null");
@@ -50,23 +45,6 @@ namespace Pocket_Portal_Guide
 
 			PortalInformation?.Invoke(null, new PortalInformationEventArgs(portalPrefab, portalPrefabHashcode));
 
-			___m_zdoMan.GetAllZDOsWithPrefab(portalPrefab.name, portals);
-
-			foreach (ZDO z1 in portals)
-			{
-				Portal kp = new Portal(z1);
-				PortalFound?.Invoke(null, kp);
-				//_portalsByZDOID.Add(kp.Id, kp);
-				if (!kp.Target.IsNone())
-				{
-					ZDO z2 = ZDOMan.instance.GetZDO(kp.Target);
-					LogManager.Instance.Log(BepInEx.Logging.LogLevel.Info, $"[LoadWorld] {kp} connected to portal at {z2.GetPosition()}");
-				}
-				else
-				{
-					LogManager.Instance.Log(BepInEx.Logging.LogLevel.Info, $"[LoadWorld] {kp} unconnected");
-				}
-			}
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -10,14 +11,15 @@ namespace Pocket_Portal_Guide
 	/// </summary>
 	class PortalManager
 	{
-		private static object _syncRoot = new object();
 		public static PortalManager Instance { get; private set; }
-
 		public GameObject PortalPrefab { get; set; }
 		public int PortalPrefabHashCode { get; set; }
 		public string UntaggedPortalPinName { get; private set; }
+
+		private static object _syncRoot = new object();
 		private List<Portal> _portals = new List<Portal>();
 		private List<Portal> _removedPortals = new List<Portal>();
+		private Dictionary<string, PortalPair> _pairs = new Dictionary<string, PortalPair>();
 		public static void Init(string untaggedPortalPinName)
 		{
 			Instance = new PortalManager(untaggedPortalPinName);
@@ -26,11 +28,105 @@ namespace Pocket_Portal_Guide
 		public PortalManager(string untaggedPortalPinName)
 		{
 			UntaggedPortalPinName = untaggedPortalPinName;
-			ZNetPatcher.PortalFound += ZNetPatcher_PortalFound;
 			ZNetPatcher.PortalInformation += ZNetPatcher_PortalInformation;
-			ZDOManPatcher.PortalCreated += ZDOManPatcher_PortalCreated;
-			ZDOManPatcher.PortalDestroyed += ZDOManPatcher_PortalDestroyed;
 		}
+
+		public Portal GetPortalByZDOID(ZDOID id)
+		{
+			return _portals.FirstOrDefault(p => p.Id == id);
+		}
+
+		/// <summary>
+		/// Updates the internal list of known Portals. Any Portals destroyed are placed in the removed portals list
+		/// </summary>
+		/// <param name="zdos"></param>
+		public void UpdatePortals(List<ZDO> zdos)
+		{
+			List<Portal> removed = new List<Portal>();
+			foreach(Portal p in _portals)
+			{
+				ZDO obj = zdos.FirstOrDefault(z => z.m_uid == p.Id);
+				if (obj == null)
+				{
+					removed.Add(p);
+				}
+			}
+			foreach(Portal p in removed)
+			{
+				_portals.Remove(p);
+			}
+			foreach(ZDO z in zdos)
+			{
+				Portal existing = GetPortalByZDOID(z.m_uid);
+				if (existing == null)
+				{
+					_portals.Add(new Portal(z));
+				}
+			}
+			UpdateConnectedPortals();
+		}
+		/// <summary>
+		/// Updates connected portal pairs and assigns the found pairs a color if they have none
+		/// </summary>
+		public void UpdateConnectedPortals()
+		{
+			_pairs.Clear();
+			foreach(Portal p in _portals)
+			{
+				if (!p.Target.IsNone())
+				{
+					if (!_pairs.ContainsKey(p.Tag))
+					{
+						_pairs[p.Tag] = new PortalPair();
+						_pairs[p.Tag].Tag = p.Tag;
+					}
+					PortalPair pair = _pairs[p.Tag];
+					if (pair.One == null)
+					{
+						pair.One = p;
+					}
+					else if (pair.Two == null)
+					{
+						pair.Two = p;
+					}
+					else
+					{
+						LogManager.Instance.Log(BepInEx.Logging.LogLevel.Warning, $"[UpdateConnectedPortals] {p} is connected to two other portals: {pair.One}, {pair.Two}");
+					}
+					if (pair.One != null && pair.Two != null)
+					{
+						Portal one = pair.One;
+						Portal two = pair.Two;
+						Color oneColor = one.AssignedColor;
+						Color twoColor = two.AssignedColor;
+						if (oneColor == Color.white && twoColor == Color.white)
+						{
+							Color r = MinimapManager.Instance.GetRandomColor();
+							one.AssignedColor = r;
+							two.AssignedColor = r;
+						}
+						else if (oneColor != Color.white)
+						{
+							two.AssignedColor = one.AssignedColor;
+						}
+						else
+						{
+							one.AssignedColor = two.AssignedColor;
+						}
+					}
+				}
+				else
+				{
+					p.AssignedColor = Color.white;
+				}
+			}
+			var unconnected = _pairs.Values.Where(pair => pair.One == null || pair.Two == null);
+			foreach(PortalPair pair in unconnected)
+			{
+				_pairs.Remove(pair.Tag);
+			}
+		}
+
 		/// <summary>
 		/// Returns a list of removed portals and empties the internal list
 		/// </summary>
@@ -56,38 +152,10 @@ namespace Pocket_Portal_Guide
 			}
 		}
 
-		private void TryAddPortal(Portal p)
-		{
-			if (!_portals.Any(x => x.Id == p.Id))
-			{
-				_portals.Add(p);
-			}
-		}
-
-		private void ZDOManPatcher_PortalDestroyed(object sender, ZDOID e)
-		{
-			Portal p = _portals.FirstOrDefault(x => x.Id == e);
-			if (p != null)
-			{
-				_portals.Remove(p);
-				_removedPortals.Add(p);
-			}
-		}
-
-		private void ZDOManPatcher_PortalCreated(object sender, Portal e)
-		{
-			TryAddPortal(e);
-		}
-
 		private void ZNetPatcher_PortalInformation(object sender, PortalInformationEventArgs e)
 		{
 			PortalPrefab = e.PortalPrefab;
 			PortalPrefabHashCode = e.PrefabHashCode;
-		}
-
-		private void ZNetPatcher_PortalFound(object sender, Portal e)
-		{
-			TryAddPortal(e);
 		}
 	}
 }

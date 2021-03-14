@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Pocket_Portal_Guide
 {
@@ -18,7 +20,9 @@ namespace Pocket_Portal_Guide
 		/// Raised when a map pin for a Portal has been removed
 		/// </summary>
 		public static event EventHandler<Minimap.PinData> PortalPinRemoved;
+		public static Minimap.PinType PinType { get; set; } = Minimap.PinType.Icon4;
 		private static MinimapWrapper _miniMap = null;
+
 		/// <summary>
 		/// Prefix patch for Minimap.UpdatePins.
 		/// <para>First removes all pins of Portals that have been removed since the last UpdatePins call</para>
@@ -51,12 +55,17 @@ namespace Pocket_Portal_Guide
 				}
 				if (portal.MapPin == null)
 				{
-					portal.MapPin = __instance.AddPin(portal.Position, Minimap.PinType.Icon4, portal.Tag, true, false);
+					portal.MapPin = __instance.AddPin(portal.Position, PinType, portal.Tag, true, false);
 					PortalPinAdded?.Invoke(null, portal.MapPin);
 				}
 				if (portal.MapPin != null)
 				{
 					portal.MapPin.m_name = portal.Tag;
+				}
+				if (portal.MapPin.m_uiElement != null && MinimapManager.Instance.UseColorCoding)
+				{
+					Image icon = portal.MapPin.m_uiElement.GetComponent<Image>();
+					icon.color = portal.AssignedColor;
 				}
 			}
 		}

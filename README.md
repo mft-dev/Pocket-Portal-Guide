@@ -15,10 +15,11 @@ The plugin comes with the standard INI file
 [Minimap]
 Show Pins = false
 Untagged Portal Label = -untagged-
+Use Color Coding = true
 ```
 The ``Minimap`` section deals with map pins. ``Show Pins`` determines if the plugin should show Portal pins on start or not.
 ``Untagged Portal Label`` is the pin name given to Portals witn no tag. Pins with an empty string for a name won't show up on the map, so setting this to an empty string disables showing untagged portals
-
+If ``Use Color Coding`` is true, the plugin will assign a random color to connected portal pairs
 ```
 [Toggle Show Pins]
 Key = F8

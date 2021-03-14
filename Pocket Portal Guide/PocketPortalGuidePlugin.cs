@@ -19,11 +19,12 @@ namespace Pocket_Portal_Guide
 
 			bool showPins = Config.Bind("Minimap", "Show Pins", false, "Value indicating whether to show map pins for portals by default").Value;
 			string untaggedPinName = Config.Bind("Minimap", "Untagged Portal Label", "-untagged-", "The name to give untagged portal pins").Value;
+			bool colorCodedPins = Config.Bind("Minimap", "Use Color Coding", true, "Color code the map pins for connected portals").Value;
 			KeyCode key = Config.Bind("Toggle Show Pins", "Key", KeyCode.F8, "Key to press to toggle showing map pins. Combine with the Modifier key to create CTRL+P combinations.").Value;
 			KeyCode mod = Config.Bind("Toggle Show Pins", "Modifier", KeyCode.None, "The key to hold while pressing the Key to toggle. If you only wish to use a single key, set this to None").Value;
 
 			PortalManager.Init(untaggedPinName);
-			MinimapManager.Init(showPins);
+			MinimapManager.Init(showPins, colorCodedPins);
 
 			InputManager.Init(mod, key);
 			InputManager.Instance.MapPinToggled += (s, e) => { MinimapManager.Instance.ShowMapPins = !MinimapManager.Instance.ShowMapPins; };

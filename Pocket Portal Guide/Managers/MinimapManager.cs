@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Pocket_Portal_Guide
 {
@@ -11,8 +12,10 @@ namespace Pocket_Portal_Guide
 		public static MinimapManager Instance { get; private set; }
 
 		private List<Minimap.PinData> _addedPins = new List<Minimap.PinData>();
+		private List<Minimap.SpriteData> _addedIcons = new List<Minimap.SpriteData>();
 
 		private bool _showMapPins = false;
+		public bool UseColorCoding { get; private set; } = false;
 		public bool ShowMapPins
 		{
 			get
@@ -25,14 +28,15 @@ namespace Pocket_Portal_Guide
 				LogManager.Instance.Log(BepInEx.Logging.LogLevel.Info, $"[MinimapManager] ShowMapPins toggled: {_showMapPins}");
 			}
 		}
-		public static void Init(bool showPins)
+		public static void Init(bool showPins, bool colorCodedPins)
 		{
-			Instance = new MinimapManager(showPins);
+			Instance = new MinimapManager(showPins, colorCodedPins);
 		}
 
-		public MinimapManager(bool showPins)
+		public MinimapManager(bool showPins,bool colorCodedPins)
 		{
 			_showMapPins = showPins;
+			UseColorCoding = colorCodedPins;
 			MinimapPatcher.PortalPinAdded += MinimapPatcher_PinAdded;
 			MinimapPatcher.PortalPinRemoved += MinimapPatcher_PinRemoved;
 		}
@@ -53,6 +57,18 @@ namespace Pocket_Portal_Guide
 				_addedPins.Add(e);
 			}
 		}
+
+		private System.Random _r = new System.Random(0);
+		public Color GetRandomColor()
+		{
+			float r = (float)_r.NextDouble();
+			float g = (float)_r.NextDouble();
+			float b = (float)_r.NextDouble();
+			float a = 1f;
+			return new Color(r, g, b, a);
+		}
+
+
 		/// <summary>
 		/// Returns a list of removed Portals since the last time this method was called.
 		/// <para>NOTE - DESTRUCTIVE. This method will empty the internal list of removed portals</para>
