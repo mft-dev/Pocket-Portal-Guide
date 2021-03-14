@@ -12,7 +12,6 @@ namespace Pocket_Portal_Guide
 		public static MinimapManager Instance { get; private set; }
 
 		private List<Minimap.PinData> _addedPins = new List<Minimap.PinData>();
-		private List<Minimap.SpriteData> _addedIcons = new List<Minimap.SpriteData>();
 
 		private bool _showMapPins = false;
 		public bool UseColorCoding { get; private set; } = false;
@@ -58,6 +57,8 @@ namespace Pocket_Portal_Guide
 			}
 		}
 
+		// don't use UnityEngine.Random here, as that would have influence on the game
+		// seed doesn't matter, unless someone knows a way to predict the first 100 or so colors that this produces, any seed is fine
 		private System.Random _r = new System.Random(0);
 		public Color GetRandomColor()
 		{

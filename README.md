@@ -8,7 +8,13 @@ Once that is done, you should be able to build.
 # Installing
 Drop the DLL into your BepInEx/Plugins folder.
 
-# Configuration
+# Usage
+By default the plugin will not show map pins. To toggle them on the default key is F8. When toggled on, any portal will appear on the minimap and large map as a portal icon with the portal tag as the pin name
+Any connected portal pair will get a randomly assigned color (this can be turned off in the INI file).
+
+The plugin will remove pins before mapdata is saved (this happens periodically and on logout/shutdown), to avoid polluting the save game data, and avoid adding pins on top of existing pins.
+
+# Detailed Configuration
 The plugin comes with the standard INI file
 
 ```
